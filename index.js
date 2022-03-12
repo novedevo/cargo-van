@@ -20,20 +20,37 @@ async function handleRequest() {
     if (!lastShipIds.has(ship.IMO)) {
       const response = await fetch(baseUrl + "search/searchAsset?what=vessel&term=" + ship.IMO, { headers }).then((res) => res.json());
       const countryCode = response[0].desc.replace(ship.SHIPNAME, "").substring(2, 4);
-      return `${ship.TYPE_SUMMARY} ship ${flags[countryCode]} ${ship.SHIPNAME} is ${ship.MOVE_TYPE_NAME === "ARRIVAL" ? "arriving" : "departing"}`;
+
+      if (ship.TYPE_SUMMARY === "Tanker") {
+        const shipSummary = `Tanker ${ship.SHIPNAME}, hailing from ${flags[countryCode]}`;
+        if (ship.MOVE_TYPE_NAME === "ARRIVAL") {
+          return `${shipSummary}, has entered the port. Good opportunity for some praxis!`;
+        } else {
+          return `${shipSummary}, has left the port. Good riddance! Don't kill the ecosystem on your way out!`;
+        }
+      } else {
+        const shipSummary = `cargo freighter ${ship.SHIPNAME}, hailing from ${flags[countryCode]}`;
+        if (ship.MOVE_TYPE_NAME === "ARRIVAL") {
+          return `Welcome, ${shipSummary}.`;
+        } else {
+          return `Farewell, ${shipSummary}`;
+        }
+      }
     }
   });
 
-  const countryCodes = (await Promise.all(countryResponses)).filter((a) => a);
+  const messages = (await Promise.all(countryResponses)).filter((a) => a);
 
   try {
-    for (const countryCode of countryCodes) {
-      await fetch("https://tweelay.nyble.dev/cargo-ship/", {
+    for (const message of messages) {
+      await fetch("https://tweelay.nyble.dev/yvrships/", {
+        method: "POST",
         headers: {
-          "x-api-key": "nibblenibble",
-          "x-tweet": countryCode
-        }
+          "x-api-key": TWEELAY_API_KEY,
+        },
+        body: message
       })
+      console.log("i sent a request! it said " + message);
     }
 
   } catch (e) {
@@ -42,7 +59,7 @@ async function handleRequest() {
 
   await cargo_van.put("lastShipIds", JSON.stringify(ships.map((ship) => ship.IMO)));
 
-  return new Response(JSON.stringify(countryCodes), {
+  return new Response(JSON.stringify(messages), {
     headers: { 'content-type': 'text/json' },
   });
 }
