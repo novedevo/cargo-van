@@ -1,8 +1,12 @@
 name = "cargo-van"
-type = "webpack"
+type = "javascript"
 
 account_id = ""
 workers_dev = true
 route = ""
 zone_id = ""
 compatibility_date = "2022-03-12"
+
+kv_namespaces = [
+    { binding = "cargo_van", id = "e2563ba4712641e8accbf49a042971db" },
+]
