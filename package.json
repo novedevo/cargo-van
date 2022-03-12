@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "name": "cargo-van",
+  "version": "0.1.0",
+  "main": "index.js",
+  "author": "Devon Sawatsky",
+  "type": "module",
+  "dependencies": {
+    "axios": "^0.26.1",
+    "node-emoji": "^1.11.0"
+  },
+  "devDependencies": {
+    "prettier": "^1.18.2"
+  },
+  "scripts": {
+    "deploy": "wrangler publish"
+  }
+}
