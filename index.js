@@ -3,14 +3,10 @@ const headers = {
   "Vessel-Image": "00be19cb54b3d523161214b2a2e1d68cf011",
 }
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
+addEventListener('scheduled', event => {
+  event.waitUntil(handleRequest())
 })
-/**
- * Respond with hello worker text
- * @param {Request} request
- */
-async function handleRequest(request) {
+async function handleRequest() {
   console.log("begin")
   const response = await fetch(baseUrl + "reports?asset_type=arrivals_departures&columns=shipname,move_type,ata_atd,imo,ship_type&port_in=682&ship_type_in=7,8", {
     headers
@@ -29,6 +25,20 @@ async function handleRequest(request) {
   });
 
   const countryCodes = (await Promise.all(countryResponses)).filter((a) => a);
+
+  try {
+    for (const countryCode of countryCodes) {
+      await fetch("https://tweelay.nyble.dev/cargo-ship/", {
+        headers: {
+          "x-api-key": "nibblenibble",
+          "x-tweet": countryCode
+        }
+      })
+    }
+
+  } catch (e) {
+    console.error(e)
+  }
 
   await cargo_van.put("lastShipIds", JSON.stringify(ships.map((ship) => ship.IMO)));
 
