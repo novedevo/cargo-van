@@ -33,7 +33,7 @@ async function handleRequest() {
         if (ship.MOVE_TYPE_NAME === "ARRIVAL") {
           return `Welcome, ${shipSummary}.`;
         } else {
-          return `Farewell, ${shipSummary}`;
+          return `Farewell, ${shipSummary}.`;
         }
       }
     }
