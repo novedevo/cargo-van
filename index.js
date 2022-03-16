@@ -19,6 +19,10 @@ async function handleRequest() {
   const countryResponses = ships.map(async (ship) => {
     if (!lastShipIds.has(ship.IMO)) {
       const response = await fetch(baseUrl + "search/searchAsset?what=vessel&term=" + ship.IMO, { headers }).then((res) => res.json());
+      if (response.length < 1) {
+        console.error("search results failed");
+        return;
+      }
       const countryCode = response[0].desc.replace(ship.SHIPNAME, "").substring(2, 4);
 
       if (ship.TYPE_SUMMARY === "Tanker") {
