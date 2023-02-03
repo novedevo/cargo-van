@@ -67,9 +67,7 @@ async function handleRequest() {
         })
       });
 
-      await tweelay_promise;
-      await feeling_promise;
-
+      await Promise.allSettled([tweelay_promise, feeling_promise]);
       console.log("i sent a request! it said " + message);
     }
 
