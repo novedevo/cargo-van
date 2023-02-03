@@ -47,13 +47,29 @@ async function handleRequest() {
 
   try {
     for (const message of messages) {
-      await fetch("https://tweelay.nyble.dev/yvrships/", {
+      let tweelay_promise = fetch("https://tweelay.nyble.dev/yvrships/", {
         method: "POST",
         headers: {
           "x-api-key": TWEELAY_API_KEY,
         },
         body: message
-      })
+      });
+
+      let feeling_promise = fetch("https://feeling.nyble.dev/amble.quest/cargovan/", {
+        method: "POST",
+        headers: {
+          "x-api-key": TWEELAY_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          'status': message,
+          'visibility': 'unlisted'
+        })
+      });
+
+      await tweelay_promise;
+      await feeling_promise;
+
       console.log("i sent a request! it said " + message);
     }
 
