@@ -6,6 +6,15 @@ const headers = {
 addEventListener('scheduled', event => {
   event.waitUntil(handleRequest())
 })
+
+addEventListener('fetch', event => {
+  return event.respondWith(httpRequest(event.request))
+})
+
+async function httpRequest(request) {
+  return new Response(await cargo_van.get("lastShipMessages"))
+}
+
 async function handleRequest() {
   console.log("begin")
   const response = await fetch(baseUrl + "reports?asset_type=arrivals_departures&columns=shipname,move_type,ata_atd,imo,ship_type&port_in=682&ship_type_in=7,8", {
@@ -13,9 +22,8 @@ async function handleRequest() {
   }).then((res) => res.json());
 
   const ships = response.data;
-  const lastShipIds = new Set(JSON.parse((await cargo_van.get("lastShipIds")) ?? "[]")); // populate from last run
+  const lastShipIds = new Set(JSON.parse(await cargo_van.get("lastShipIds"))); // populate from last run
 
-  console.log("here")
   const countryResponses = ships.map(async (ship) => {
     if (!lastShipIds.has(ship.IMO)) {
       const response = await fetch(baseUrl + "search/searchAsset?what=vessel&term=" + ship.IMO, { headers }).then((res) => res.json());
@@ -74,10 +82,13 @@ async function handleRequest() {
   } catch (e) {
     console.error(e)
   }
+  const lastShips = JSON.parse(await cargo_van.get("lastShipMessages")) ?? [];
+  lastShips.push(...messages);
 
   await cargo_van.put("lastShipIds", JSON.stringify(ships.map((ship) => ship.IMO)));
+  await cargo_van.put("lastShipMessages", JSON.stringify(lastShips.slice(-50)))
 
-  return new Response(JSON.stringify(messages), {
+  return new Response(messages, {
     headers: { 'content-type': 'text/json' },
   });
 }
